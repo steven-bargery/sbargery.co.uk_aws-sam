@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'SAM deployment of sbargery.co.uk visitor count
+
+  '
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+  visitorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: visitorFunction
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Events:
+        visitorAPI:
+          Type: Api
+          Properties:
+            Path: /count
+            Method: get
+      Environment:
+        Variables:
+          databaseName:
+            Ref: visitorTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: visitorTable
+  visitorTable:
+    Type: AWS::Serverless::SimpleTable
+Outputs:
+  visitorApi:
+    Description: API Gateway endpoint URL for Prod stage for visitor function
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/count/
